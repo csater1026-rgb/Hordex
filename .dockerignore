@@ -1,0 +1,7 @@
+node_modules
+app/android
+app/node_modules
+data
+runs
+*.log
+.git

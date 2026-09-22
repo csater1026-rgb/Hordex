@@ -1,0 +1,12 @@
+# One-click-ish deploy to Render. Point Render at this repo; it reads this file.
+services:
+  - type: web
+    name: hordex
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      # Optional: set to have Claude drive the bots. Without it, the heuristic
+      # brain is used and the swarm still runs.
+      - key: ANTHROPIC_API_KEY
+        sync: false

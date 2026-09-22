@@ -1,0 +1,20 @@
+{
+  "name": "hordex-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hordex mobile cockpit — drive the AI test swarm from your phone. Shipaton Next Gen entry.",
+  "scripts": {
+    "sync": "cap sync",
+    "add:android": "cap add android",
+    "open:android": "cap open android",
+    "run:android": "cap run android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@revenuecat/purchases-capacitor": "^9.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

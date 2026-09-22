@@ -1,0 +1,11 @@
+node_modules/
+*.log
+data/
+.hordex-data/
+runs/
+_*.mjs
+.DS_Store
+
+# Capacitor native project — regenerate with `npx cap add android`
+app/android/
+app/ios/

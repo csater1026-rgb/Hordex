@@ -1,0 +1,9 @@
+{
+  "appId": "com.hordex.app",
+  "appName": "Hordex",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}
