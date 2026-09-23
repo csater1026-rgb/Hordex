@@ -6,6 +6,10 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     envVars:
+      # RevenueCat v1 SECRET key — lets the backend verify Pro server-side and
+      # enforce the one-time free scan. Omit only for a throwaway dev backend.
+      - key: REVENUECAT_SECRET_KEY
+        sync: false
       # Optional: set to have Claude drive the bots. Without it, the heuristic
       # brain is used and the swarm still runs.
       - key: ANTHROPIC_API_KEY

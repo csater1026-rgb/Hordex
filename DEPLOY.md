@@ -14,8 +14,15 @@ demo swarm of a handful of bots).
 2. On [railway.app](https://railway.app): **New Project → Deploy from GitHub repo**
    → pick `Hordex`.
 3. Railway detects the `Dockerfile` and builds it. No extra config needed.
-4. (Optional) **Variables → New Variable** → `ANTHROPIC_API_KEY` = your key, to
-   have Claude drive the bots. Without it, the heuristic brain runs the swarm.
+4. **Variables → New Variable**:
+   - `REVENUECAT_SECRET_KEY` = your RevenueCat **v1 secret** key (`sk_…`), so the
+     backend can verify Pro server-side and enforce the one-time free scan. Omit
+     it only for a throwaway dev backend (then Pro isn't verified).
+   - `ANTHROPIC_API_KEY` (optional) = your key, to have Claude drive the bots.
+     Without it, the heuristic brain runs the swarm.
+   - `HORDEX_OPERATOR_TOKEN` (optional) = any secret, if you want the web
+     dashboard to run unlimited scans on the hosted backend (paste it into the
+     dashboard's request or keep it for your own use).
 5. When it's live, open **Settings → Networking → Generate Domain**. Copy that
    `https://…up.railway.app` URL — that's your backend URL for the app.
 

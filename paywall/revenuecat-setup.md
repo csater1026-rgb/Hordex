@@ -37,11 +37,25 @@ Edit `app/www/config.js`:
 ```js
 window.HORDEX_CONFIG = {
   BACKEND_URL: "https://your-swarm-backend.up.railway.app",
-  REVENUECAT_API_KEY: "test_XXXXXXXXXXXXXXXXXXXX",   // Test Store public key
+  REVENUECAT_API_KEY: "test_XXXXXXXXXXXXXXXXXXXX",   // Test Store PUBLIC key
   ENTITLEMENT_ID: "pro",
   OFFERING_ID: "default"
 };
 ```
+
+## 3b. Let the backend verify Pro (server-side enforcement)
+
+The paywall is enforced on the server so it can't be bypassed by calling the API
+directly. Give the backend your project's **v1 SECRET key** (Project settings →
+API keys → *Secret* `sk_…`, never shipped to the app):
+
+- Set `REVENUECAT_SECRET_KEY=sk_...` on the deployed backend (see `DEPLOY.md`).
+
+With it set, the backend asks RevenueCat whether each app-user-id actually holds
+the `pro` entitlement before running a Pro scan, and tracks the one-time free
+scan per install. **Without it, the backend runs in dev mode** and trusts the
+app's Pro claim — fine for local development, but set the key for the hosted
+demo.
 
 ## 4. Run a purchase (the thing the judges see)
 
@@ -51,8 +65,8 @@ On a real Android device/emulator with the app installed (see `app/README.md`):
 2. Tap a package → the Test Store completes a **sandbox purchase** (no real
    money, no card).
 3. RevenueCat returns `customerInfo` with the **`pro`** entitlement active →
-   the app flips to **PRO**, raising the swarm cap to 20 and revealing the full
-   security sweep + export.
+   the app flips to **PRO**: unlimited scans, up to 20 bots, before-vs-after
+   re-runs, and report export. (Free is one 5-bot demo scan.)
 
 That end-to-end flow — offering shown, purchase made, entitlement unlocked — is
 the RevenueCat integration the Shipaton requires, and it's what your demo video

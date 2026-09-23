@@ -89,6 +89,18 @@ export const RC = {
       return !!(customerInfo && customerInfo.entitlements && customerInfo.entitlements.active && customerInfo.entitlements.active[ENTITLEMENT]);
     } catch { return false; }
   },
+
+  // The RevenueCat app-user-id. The backend uses it to verify Pro server-side
+  // and to track the one-time free scan. On web (no bridge) we mint a stable id.
+  async appUserId() {
+    const P = nativePurchases();
+    if (P) { try { const r = await P.getAppUserID(); return r && (r.appUserID || r); } catch {} }
+    try {
+      let id = localStorage.getItem("hordex_uid");
+      if (!id) { id = "web-" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("hordex_uid", id); }
+      return id;
+    } catch { return "web-anon"; }
+  },
 };
 
 // ---- Web-preview mock (no native bridge). Lets the paywall be demoed in a browser.

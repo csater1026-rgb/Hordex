@@ -8,7 +8,7 @@
   :root{
     --bg:#0b0e18; --panel:#141a2b; --panel2:#1b2236; --line:#28304d;
     --ink:#eef1fb; --mut:#98a2c8; --accent:#7c5cff; --accent2:#22d3ee;
-    --crit:#ff4d6d; --high:#ff9f43; --med:#ffd43b; --low:#7bd88f;
+    --crit:#ff4d6d; --high:#ff9f43; --med:#ffd43b; --low:#7bd88f; --safe:#7bd88f;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
@@ -23,8 +23,9 @@
   .gear{background:none;border:0;color:var(--mut);font-size:20px;padding:4px 6px;margin-left:8px}
   main{max-width:640px;margin:0 auto;padding:14px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:13px}
-  .card h2{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--mut)}
-  label.field{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
+  .card h2{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--mut)}
+  .card h2 .sub{text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;display:block;margin-top:2px}
+  label.field{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px}
   input[type=text]{width:100%;background:#0b0f1d;border:1px solid var(--line);color:var(--ink);border-radius:11px;padding:12px;font:inherit}
   input[type=range]{width:100%}
   .chk{display:flex;gap:9px;align-items:flex-start;margin:12px 0;font-size:13px;color:var(--mut)}
@@ -34,35 +35,36 @@
   .primary:disabled{opacity:.5}
   .stop{background:#3a2130;color:#ff8fa3}
   .ghost{background:#222a43;color:var(--ink)}
+  .disclose{background:none;border:0;color:var(--accent2);font-size:13px;padding:0;width:auto;font-weight:600}
   .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
   .tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px;text-align:center}
   .tile .n{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
   .tile .l{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
-  .tile.crit .n{color:var(--crit)} .tile.high .n{color:var(--high)} .tile.med .n{color:var(--med)} .tile.low .n{color:var(--low)}
+  .tile.crit .n{color:var(--crit)} .tile.high .n{color:var(--high)} .tile.med .n{color:var(--med)} .tile.safe .n{color:var(--safe)}
   .bots{display:flex;gap:8px;overflow:auto;padding-bottom:4px}
   .bot{flex:none;width:120px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px}
   .bot .av{font-size:18px} .bot.active{box-shadow:0 0 0 2px #7c5cff55}
   .bot .nm{font-weight:700;font-size:12px;margin-top:2px} .bot .ac{color:var(--mut);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bot .c{color:var(--accent2);font-weight:800;font-size:13px;float:right}
-  .feed{max-height:180px;overflow:auto;display:flex;flex-direction:column;gap:5px;font-size:13px}
+  .feed{max-height:190px;overflow:auto;display:flex;flex-direction:column;gap:5px;font-size:13px}
   .ev{padding:5px 8px;border-radius:8px;background:#0d1222;border:1px solid #1c2338;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ev .who{color:var(--accent2);font-weight:700}
+  .ev.skip{color:var(--safe)} .ev .who{color:var(--accent2);font-weight:700}
   .finding{border:1px solid var(--line);border-left-width:4px;border-radius:12px;padding:11px;background:var(--panel2);margin-bottom:8px}
   .finding.crit{border-left-color:var(--crit)} .finding.high{border-left-color:var(--high)} .finding.med{border-left-color:var(--med)} .finding.low{border-left-color:var(--low)}
-  .finding .top{display:flex;gap:8px;align-items:center}
+  .finding .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .sev{font-size:10px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:6px;flex:none}
   .sev.crit{background:#3a1522;color:var(--crit)} .sev.high{background:#3a2716;color:var(--high)} .sev.med{background:#3a3616;color:var(--med)} .sev.low{background:#16321f;color:var(--low)}
+  .new{font-size:10px;font-weight:800;color:#08101e;background:var(--accent2);padding:2px 7px;border-radius:6px}
   .finding .ttl{font-weight:700;font-size:14px}
   .finding .sub{color:var(--mut);font-size:12px;margin-top:3px;word-break:break-word}
   .finding .fix{margin-top:7px;font-size:12.5px;color:#cfe3ff;background:#0e1a2f;border:1px solid #1d3350;border-radius:8px;padding:7px 9px}
   .lock{border:1px dashed #3a3f66;border-radius:12px;padding:15px;text-align:center;background:#141b30;margin-top:8px}
   .muted{color:var(--mut)} .hidden{display:none} .empty{color:var(--mut);font-size:13px;text-align:center;padding:18px 0}
-  /* Sheet */
   .sheet{position:fixed;inset:0;background:#05070ecc;display:flex;align-items:flex-end;z-index:20}
   .sheet .inner{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:640px;margin:0 auto;max-height:88vh;overflow:auto}
   .pkg{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:14px;margin:9px 0;background:var(--panel2)}
   .pkg .p{margin-left:auto;font-weight:800;color:var(--accent2)}
-  .feature{display:flex;gap:9px;align-items:center;color:var(--mut);font-size:13.5px;margin:6px 0}
+  .feature{display:flex;gap:9px;align-items:flex-start;color:var(--mut);font-size:13.5px;margin:7px 0}
   .feature b{color:var(--ink)}
 </style>
 </head>
@@ -74,15 +76,30 @@
 </header>
 <main>
   <div class="card">
-    <h2>Scan a target</h2>
+    <h2>Test a target<span class="sub">A swarm of bots uses your app like real people and reports what breaks.</span></h2>
     <label class="field">Target URL</label>
     <input id="target" type="text" placeholder="https://your-app.com" spellcheck="false" autocapitalize="off">
-    <label class="field">Swarm size · <span id="botLabel">3</span> bots <span id="cap" class="muted"></span></label>
-    <input id="bots" type="range" min="1" max="20" value="3">
+    <label class="field">Swarm size · <span id="botLabel">5</span> bots <span id="cap" class="muted"></span></label>
+    <input id="bots" type="range" min="1" max="20" value="5">
     <label class="chk"><input id="own" type="checkbox"><span>I own this target or I’m authorized to test it.</span></label>
     <button id="start" class="primary" disabled>Release the swarm</button>
     <button id="stop" class="stop hidden" style="margin-top:8px">Stop scan</button>
     <p id="conn" class="muted" style="font-size:12px;margin:.6em 0 0"></p>
+  </div>
+
+  <div class="card">
+    <h2>Safety scope <span class="muted" style="font-weight:400;text-transform:none;letter-spacing:0">· always on</span></h2>
+    <p class="muted" style="font-size:12.5px;margin:.2em 0 .4em">Destructive actions (delete, pay, log out…) are skipped automatically. Add anything else the bots should never touch.</p>
+    <button class="disclose" id="scopeToggle">Customize scope ▾</button>
+    <div id="scopeBody" class="hidden">
+      <label class="field">No-go pages (comma-separated paths)</label>
+      <input id="noGoPaths" type="text" placeholder="/admin, /billing, /settings" spellcheck="false" autocapitalize="off">
+      <label class="field">Extra no-go words (button/link text)</label>
+      <input id="noGoWords" type="text" placeholder="downgrade, archive, publish" spellcheck="false" autocapitalize="off">
+      <label class="field">Only test these pages (optional)</label>
+      <input id="includeOnly" type="text" placeholder="/app, /dashboard" spellcheck="false" autocapitalize="off">
+      <p class="muted" style="font-size:11.5px;margin:.5em 0 0">Tip: add <code>data-hordex-skip</code> to any element in your code to mark it off-limits.</p>
+    </div>
   </div>
 
   <div class="card">
@@ -93,52 +110,47 @@
   <div class="card">
     <h2>Live coverage</h2>
     <div class="tiles">
-      <div class="tile"><div class="n" id="tStates">0</div><div class="l">States</div></div>
-      <div class="tile"><div class="n" id="tFindings">0</div><div class="l">Found</div></div>
+      <div class="tile"><div class="n" id="tStates">0</div><div class="l">Pages</div></div>
+      <div class="tile"><div class="n" id="tFindings">0</div><div class="l">Issues</div></div>
       <div class="tile"><div class="n" id="tActs">0</div><div class="l">Actions</div></div>
-      <div class="tile"><div class="n" id="tPending">0</div><div class="l">Queue</div></div>
+      <div class="tile safe"><div class="n" id="tSkips">0</div><div class="l">Kept safe</div></div>
     </div>
     <div class="feed" id="feed" style="margin-top:11px"></div>
   </div>
 
   <div class="card">
-    <h2>Findings</h2>
+    <h2>Issues found</h2>
     <div class="tiles" style="margin-bottom:11px">
       <div class="tile crit"><div class="n" id="cCrit">0</div><div class="l">Crit</div></div>
       <div class="tile high"><div class="n" id="cHigh">0</div><div class="l">High</div></div>
       <div class="tile med"><div class="n" id="cMed">0</div><div class="l">Med</div></div>
-      <div class="tile low"><div class="n" id="cLow">0</div><div class="l">Low</div></div>
+      <div class="tile"><div class="n" id="cNew">0</div><div class="l">New</div></div>
     </div>
-    <div id="findings"><div class="empty">No findings yet.</div></div>
-    <div id="secLock" class="lock hidden">
-      🔒 <b><span id="secCount">0</span> security findings hidden</b>
-      <p class="muted" style="font-size:12.5px;margin:.4em 0 .8em">The full 84-check security sweep and export are Pro.</p>
-      <button class="primary" id="unlock1">Unlock Pro</button>
-    </div>
+    <div id="findings"><div class="empty">No issues yet.</div></div>
     <button id="export" class="ghost hidden" style="margin-top:10px">⬇ Export report</button>
   </div>
 </main>
 
-<!-- Settings sheet -->
 <div id="settings" class="sheet hidden"><div class="inner">
   <h2 style="margin-top:0">Settings</h2>
   <label class="field">Swarm backend URL</label>
   <input id="backend" type="text" placeholder="https://hordex-xxxx.up.railway.app" spellcheck="false" autocapitalize="off">
-  <p class="muted" style="font-size:12px">Where your deployed Hordex swarm runs. The app sends scans here.</p>
+  <p class="muted" style="font-size:12px">Where your deployed Hordex swarm runs.</p>
   <button class="primary" id="saveSettings" style="margin-top:8px">Save</button>
   <button class="ghost" id="restore" style="margin-top:8px">Restore purchases</button>
   <button class="ghost" id="closeSettings" style="margin-top:8px">Close</button>
 </div></div>
 
-<!-- Paywall sheet -->
 <div id="paywall" class="sheet hidden"><div class="inner">
   <h2 style="margin-top:0">Hordex Pro</h2>
+  <p class="muted" id="pwWhy" style="margin:.2em 0 .8em">Free includes one demo scan. Unlock Pro for the rest.</p>
+  <div class="feature">🔁 <span><b>Unlimited scans</b> — test after every change</span></div>
   <div class="feature">🕷️ <span><b>Up to 20 bots</b> — a real swarm, not a trickle</span></div>
-  <div class="feature">🛡️ <span><b>Full 84-check security sweep</b> — secrets, IDOR, XSS, auth & more</span></div>
-  <div class="feature">📄 <span><b>Export reports</b> with fixes to share or file</span></div>
+  <div class="feature">📊 <span><b>Before-vs-after</b> — see exactly what a change newly broke</span></div>
+  <div class="feature">📄 <span><b>Downloadable reports</b> with fixes</span></div>
   <div id="pkgs"><div class="empty">Loading plans…</div></div>
   <button class="ghost" id="closePaywall" style="margin-top:6px">Not now</button>
-  <p class="muted" style="font-size:11px;text-align:center;margin:.7em 0 0">Uses RevenueCat. Test Store builds run purchases in sandbox.</p>
+  <p class="muted" style="font-size:11px;text-align:center;margin:.7em 0 0">Purchases via RevenueCat. Test Store builds run in sandbox (free).</p>
 </div></div>
 
 <script src="config.js"></script>
@@ -146,37 +158,44 @@
 import { RC } from "./revenuecat.js";
 const $ = (id)=>document.getElementById(id);
 const CFG = window.HORDEX_CONFIG || {};
-const PERSONA_EMOJI = { skimmer:"⚡", newcomer:"🧭", power:"⌨️", flaky:"📶", attacker:"🕷️" };
-const FREE_BOT_CAP = 3;
+const EMOJI = { skimmer:"⚡", newcomer:"🧭", power:"⌨️", flaky:"📶", chaos:"🌀" };
+const FREE_BOTS = 5;
 
-let pro=false, ws=null, running=false, actCount=0;
+let pro=false, uid="", ws=null, running=false, actCount=0, skipCount=0, freeUsed=false;
 const bots=new Map(); const findings=[]; const stateSet=new Set();
 
-function backendURL(){ try{ return localStorage.getItem("hordex_backend") || CFG.BACKEND_URL || ""; }catch{ return CFG.BACKEND_URL||""; } }
+function backendURL(){ try{ return localStorage.getItem("hordex_backend")||CFG.BACKEND_URL||""; }catch{ return CFG.BACKEND_URL||""; } }
 function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function shortUrl(u){ try{ const x=new URL(u); return x.pathname+(x.search||""); }catch{ return u; } }
+function parseList(s){ return String(s||"").split(/[,\n]/).map(x=>x.trim()).filter(Boolean); }
+function scope(){ return { noGoPaths:parseList($("noGoPaths").value), noGoActions:parseList($("noGoWords").value), includeOnly:parseList($("includeOnly").value) }; }
 
 async function refreshPlan(){
   pro = await RC.isPro();
   $("badge").textContent = pro?"PRO":"FREE"; $("badge").className="badge "+(pro?"pro":"free");
-  $("bots").max = pro?20:FREE_BOT_CAP;
-  if(!pro && +$("bots").value>FREE_BOT_CAP) $("bots").value=FREE_BOT_CAP;
-  $("cap").textContent = pro?"":`· free caps at ${FREE_BOT_CAP}`;
-  $("botLabel").textContent=$("bots").value;
-  renderFindings();
+  $("bots").disabled = !pro; $("bots").max = pro?20:FREE_BOTS;
+  if(!pro){ $("bots").value = FREE_BOTS; $("cap").textContent = freeUsed ? "· free demo used" : "· free = one 5-bot demo"; }
+  else $("cap").textContent = "";
+  $("botLabel").textContent = $("bots").value;
+  updateStartButton();
+}
+function updateStartButton(){
+  const canScan = $("own").checked && !(!pro && freeUsed);
+  $("start").disabled = !canScan;
+  $("start").textContent = (!pro && freeUsed) ? "Unlock Pro to scan again" : "Release the swarm";
 }
 $("bots").oninput=()=>$("botLabel").textContent=$("bots").value;
-$("own").onchange=()=>$("start").disabled=!$("own").checked;
+$("own").onchange=updateStartButton;
+$("scopeToggle").onclick=()=>{ const b=$("scopeBody"); b.classList.toggle("hidden"); $("scopeToggle").textContent = b.classList.contains("hidden")?"Customize scope ▾":"Hide scope ▴"; };
 
-// --- Settings sheet ---
 $("gear").onclick=()=>{ $("backend").value=backendURL(); $("settings").classList.remove("hidden"); };
 $("closeSettings").onclick=()=>$("settings").classList.add("hidden");
 $("saveSettings").onclick=()=>{ try{ localStorage.setItem("hordex_backend",$("backend").value.trim()); }catch{} $("settings").classList.add("hidden"); showConn(); };
 $("restore").onclick=async()=>{ await RC.restore(); await refreshPlan(); };
 function showConn(){ const b=backendURL(); $("conn").textContent = b?("Backend: "+b):"⚠ Set your backend URL in Settings (⚙)"; }
 
-// --- Paywall ---
-async function openPaywall(){
+async function openPaywall(why){
+  $("pwWhy").textContent = why || "Free includes one demo scan. Unlock Pro for the rest.";
   $("paywall").classList.remove("hidden");
   const list=$("pkgs"); list.innerHTML='<div class="empty">Loading plans…</div>';
   const offers=await RC.offerings();
@@ -185,76 +204,75 @@ async function openPaywall(){
   for(const o of offers){
     const el=document.createElement("button"); el.className="pkg"; el.style.cursor="pointer";
     el.innerHTML=`<span>${esc(o.title)}</span><span class="p">${esc(o.price)}</span>`;
-    el.onclick=async()=>{ el.disabled=true; const ok=await RC.purchase(o); if(ok){ $("paywall").classList.add("hidden"); await refreshPlan(); } else { el.disabled=false; } };
+    el.onclick=async()=>{ el.disabled=true; const ok=await RC.purchase(o); if(ok){ $("paywall").classList.add("hidden"); freeUsed=false; await refreshPlan(); } else el.disabled=false; };
     list.appendChild(el);
   }
 }
-$("unlock1").onclick=openPaywall;
 $("closePaywall").onclick=()=>$("paywall").classList.add("hidden");
 
-// --- Live rendering ---
-function addFeed(who,txt){ const f=$("feed"); if(f.querySelector(".empty"))f.innerHTML="";
-  const d=document.createElement("div"); d.className="ev"; d.innerHTML=`<span class="who">${esc(who)}</span> ${esc(txt)}`;
-  f.prepend(d); while(f.children.length>60) f.lastChild.remove(); }
+function addFeed(who,txt,cls){ const f=$("feed"); if(f.querySelector(".empty"))f.innerHTML="";
+  const d=document.createElement("div"); d.className="ev"+(cls?" "+cls:""); d.innerHTML=`<span class="who">${esc(who)}</span> ${esc(txt)}`;
+  f.prepend(d); while(f.children.length>70) f.lastChild.remove(); }
 function ensureBot(id,persona){ if(bots.has(id))return bots.get(id);
   const box=$("botlist"); if(box.querySelector(".empty"))box.innerHTML="";
   const el=document.createElement("div"); el.className="bot";
-  el.innerHTML=`<div class="av">${PERSONA_EMOJI[persona?.id]||"🤖"}<span class="c">0</span></div><div class="nm">${esc(id)}</div><div class="ac">idle</div>`;
+  el.innerHTML=`<div class="av">${EMOJI[persona?.id]||"🤖"}<span class="c">0</span></div><div class="nm">${esc(id)}</div><div class="ac">idle</div>`;
   box.appendChild(el);
   const rec={el,ac:el.querySelector(".ac"),c:el.querySelector(".c"),count:0}; bots.set(id,rec); return rec; }
 function botActive(id,txt){ const b=bots.get(id); if(!b)return; b.el.classList.add("active"); b.ac.textContent=txt; clearTimeout(b.t); b.t=setTimeout(()=>b.el.classList.remove("active"),900); }
 const SEV={crit:0,high:1,med:2,low:3};
 function renderFindings(){
-  const shown=findings.filter(f=>pro||f.type!=="security");
-  const hidden=findings.filter(f=>!pro&&f.type==="security").length;
-  const by={crit:0,high:0,med:0,low:0}; findings.forEach(f=>by[f.severity]=(by[f.severity]||0)+1);
-  $("cCrit").textContent=by.crit;$("cHigh").textContent=by.high;$("cMed").textContent=by.med;$("cLow").textContent=by.low;
-  $("secLock").classList.toggle("hidden",pro||hidden===0); $("secCount").textContent=hidden;
+  const by={crit:0,high:0,med:0,low:0}; let neu=0; findings.forEach(f=>{by[f.severity]=(by[f.severity]||0)+1; if(f.isNewToOrigin)neu++;});
+  $("cCrit").textContent=by.crit;$("cHigh").textContent=by.high;$("cMed").textContent=by.med;$("cNew").textContent=neu;
   $("export").classList.toggle("hidden",!(pro&&findings.length));
   const box=$("findings");
-  if(!shown.length){ box.innerHTML=`<div class="empty">${hidden?"":"No findings yet."}</div>`; return; }
-  shown.sort((a,b)=>SEV[a.severity]-SEV[b.severity]);
-  box.innerHTML=shown.map(f=>`<div class="finding ${f.severity}"><div class="top"><span class="sev ${f.severity}">${f.severity}</span><span class="ttl">${esc(f.title)}</span></div>${f.url?`<div class="sub">${esc(shortUrl(f.url))}</div>`:""}${f.evidence?`<div class="sub">🔎 ${esc(f.evidence)}</div>`:""}<div class="fix">🔧 ${esc(f.fix||"")}</div></div>`).join("");
+  if(!findings.length){ box.innerHTML='<div class="empty">No issues yet.</div>'; return; }
+  const sorted=[...findings].sort((a,b)=>SEV[a.severity]-SEV[b.severity]);
+  box.innerHTML=sorted.map(f=>`<div class="finding ${f.severity}"><div class="top"><span class="sev ${f.severity}">${f.severity}</span><span class="ttl">${esc(f.title)}</span>${f.isNewToOrigin?'<span class="new">NEW</span>':''}</div>${f.url?`<div class="sub">${esc(shortUrl(f.url))}</div>`:""}<div class="fix">🔧 ${esc(f.fix||"")}</div></div>`).join("");
 }
 
 function handle(e){
   switch(e.t){
-    case "run:start": $("tStates").textContent=0;$("tFindings").textContent=0;$("tActs").textContent=0;
+    case "run:start": $("tStates").textContent=0;$("tFindings").textContent=0;$("tActs").textContent=0;$("tSkips").textContent=0;
       addFeed("hordex",`swarm on ${shortUrl(e.target)} · ${e.bots} bots`); break;
     case "roster": e.bots.forEach(b=>ensureBot(b.id,b.persona)); break;
-    case "state": ensureBot(e.bot,{id:e.persona}); botActive(e.bot,"at "+shortUrl(e.url));
-      if(!stateSet.has(e.url)){ stateSet.add(e.url); } addFeed(e.bot,(e.isNew?"found ":"revisited ")+shortUrl(e.url)); break;
+    case "state": ensureBot(e.bot,{id:e.persona}); botActive(e.bot,"at "+shortUrl(e.url)); addFeed(e.bot,(e.isNew?"visited ":"revisited ")+shortUrl(e.url)); break;
     case "think": botActive(e.bot,`planning ${e.actions} moves`); break;
     case "act": actCount++; $("tActs").textContent=actCount; botActive(e.bot,e.kind+" · "+(e.reason||"")); break;
+    case "skip": skipCount++; $("tSkips").textContent=skipCount; addFeed(e.bot,`🚫 avoided ${e.label||shortUrl(e.url)} (${e.reason})`,"skip"); break;
     case "finding":{ const f=e.finding; findings.push(f); const b=bots.get(e.bot); if(b){b.count++;b.c.textContent=b.count;}
       addFeed(e.bot,`⚠ ${f.severity.toUpperCase()} · ${f.title}`); renderFindings(); break; }
-    case "stats": $("tStates").textContent=e.states;$("tFindings").textContent=e.findings;$("tPending").textContent=e.pending; break;
-    case "run:done": running=false; $("start").classList.remove("hidden"); $("stop").classList.add("hidden"); $("start").disabled=!$("own").checked;
-      window._report=e.report; addFeed("hordex",`done · ${e.report.summary.findings} findings`); renderFindings(); break;
-    case "run:error": running=false; $("start").classList.remove("hidden"); $("stop").classList.add("hidden"); $("start").disabled=!$("own").checked; addFeed("hordex","⛔ "+e.error); break;
+    case "stats": $("tStates").textContent=e.states;$("tFindings").textContent=e.findings;$("tPending")&&($("tPending").textContent=e.pending); break;
+    case "run:done": running=false; endRun(); window._report=e.report;
+      addFeed("hordex",`done · ${e.report.summary.findings} issues · ${e.report.summary.skipped} kept safe`);
+      if(e.report.summary.newlyBroken>0) addFeed("hordex",`🆕 ${e.report.summary.newlyBroken} new since last scan`);
+      renderFindings(); break;
+    case "run:error": running=false; endRun(); addFeed("hordex","⛔ "+e.error); break;
   }
 }
-function connectWS(base){ const u=base.replace(/^http/,"ws")+"/ws"; ws=new WebSocket(u);
-  ws.onmessage=(m)=>handle(JSON.parse(m.data)); ws.onclose=()=>{ if(running) setTimeout(()=>connectWS(base),700); }; }
+function endRun(){ $("stop").classList.add("hidden"); if(!pro){ freeUsed=true; } refreshPlan(); }
+function connectWS(base){ const u=base.replace(/^http/,"ws")+"/ws"; ws=new WebSocket(u); ws.onmessage=(m)=>handle(JSON.parse(m.data)); ws.onclose=()=>{ if(running) setTimeout(()=>connectWS(base),700); }; }
 
 async function start(){
   const base=backendURL(); if(!base){ $("settings").classList.remove("hidden"); return; }
-  if(!pro && +$("bots").value>FREE_BOT_CAP) $("bots").value=FREE_BOT_CAP;
-  findings.length=0; stateSet.clear(); actCount=0; bots.clear();
+  if(!pro && freeUsed){ openPaywall("You’ve used your free demo scan. Unlock Pro for unlimited scans."); return; }
+  findings.length=0; stateSet.clear(); actCount=0; skipCount=0; bots.clear();
   $("botlist").innerHTML=""; $("feed").innerHTML=""; renderFindings();
-  running=true; $("start").classList.add("hidden"); $("stop").classList.remove("hidden");
+  running=true; $("start").disabled=true; $("stop").classList.remove("hidden");
   connectWS(base);
   try{
-    const r=await fetch(base+"/api/scan",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({target:$("target").value.trim(),bots:+$("bots").value,authorized:$("own").checked})});
-    if(!r.ok){ const j=await r.json().catch(()=>({})); addFeed("hordex","⛔ "+(j.error||r.status)); running=false; $("start").classList.remove("hidden"); $("stop").classList.add("hidden"); }
-  }catch(err){ addFeed("hordex","⛔ "+err.message+" (check backend URL)"); running=false; $("start").classList.remove("hidden"); $("stop").classList.add("hidden"); }
+    const body={ target:$("target").value.trim(), bots:+$("bots").value, authorized:$("own").checked, scope:scope(), appUserId:uid, pro };
+    const r=await fetch(base+"/api/scan",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    if(r.status===402){ running=false; $("stop").classList.add("hidden"); freeUsed=true; refreshPlan(); openPaywall("You’ve used your free demo scan. Unlock Pro for unlimited scans."); return; }
+    if(!r.ok){ const j=await r.json().catch(()=>({})); addFeed("hordex","⛔ "+(j.error||r.status)); running=false; $("stop").classList.add("hidden"); refreshPlan(); }
+  }catch(err){ addFeed("hordex","⛔ "+err.message+" (check backend URL)"); running=false; $("stop").classList.add("hidden"); refreshPlan(); }
 }
 $("start").onclick=start;
 $("stop").onclick=()=>{ const b=backendURL(); if(b) fetch(b+"/api/stop",{method:"POST"}).catch(()=>{}); };
 $("export").onclick=()=>{ if(!window._report)return; const blob=new Blob([window._report.markdown],{type:"text/markdown"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="hordex-report.md"; a.click(); };
 
-(async()=>{ await RC.init(); await refreshPlan(); showConn(); if(CFG.BACKEND_URL||backendURL()) {} })();
+(async()=>{ await RC.init(); uid = await RC.appUserId(); await refreshPlan(); showConn(); })();
 </script>
 </body>
 </html>

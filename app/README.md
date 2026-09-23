@@ -42,8 +42,9 @@ npx cap sync android         # after editing anything in www/
 2. Enter a target URL you own (or leave it and scan your own dev server), tick
    **"I own this"**, and **Release the swarm**.
 3. Watch bots, coverage, and findings stream in live.
-4. Tap **Unlock Pro** to run the RevenueCat purchase (Test Store sandbox) →
-   the swarm cap jumps to 20 and the full security sweep + export unlock.
+4. You get **one free demo scan** (5 bots). Tap **Unlock Pro** to run the
+   RevenueCat purchase (Test Store sandbox) → unlimited scans, up to 20 bots,
+   before-vs-after re-runs, and report export.
 
 ## What's here
 

@@ -43,13 +43,20 @@ export class Memory {
       CREATE TABLE IF NOT EXISTS findings(
         run_id INTEGER, sig TEXT, type TEXT, category TEXT, severity TEXT,
         title TEXT, detail TEXT, url TEXT, evidence TEXT, check_id TEXT,
-        persona TEXT, bot TEXT, screenshot TEXT, ts INTEGER,
+        persona TEXT, bot TEXT, screenshot TEXT, new_to_origin INTEGER DEFAULT 0, ts INTEGER,
+        PRIMARY KEY(run_id, sig));
+      /* Things the swarm deliberately avoided (no-go scope). */
+      CREATE TABLE IF NOT EXISTS skips(
+        run_id INTEGER, sig TEXT, kind TEXT, label TEXT, url TEXT, reason TEXT, bot TEXT, ts INTEGER,
         PRIMARY KEY(run_id, sig));
       /* Cross-run knowledge, keyed by target origin. */
       CREATE TABLE IF NOT EXISTS knowledge(
         origin TEXT, kind TEXT, sig TEXT, label TEXT,
         seen_count INTEGER DEFAULT 1, last_seen INTEGER,
         PRIMARY KEY(origin, kind, sig));
+      /* One-time free-scan ledger, keyed by RevenueCat app user id. */
+      CREATE TABLE IF NOT EXISTS free_scans(
+        app_user_id TEXT PRIMARY KEY, used_at INTEGER);
     `);
   }
 
@@ -143,18 +150,44 @@ export class Memory {
   }
 
   // --- Findings ---
-  // Returns {isNew}. Deduped by finding signature within the run.
+  // Returns {isNew, isNewToOrigin}. Deduped by finding signature within the run.
+  // isNewToOrigin = never seen on this target in a PAST run (the "newly broken"
+  // signal that powers before-vs-after re-runs).
   addFinding(runId, origin, f) {
     const s = f.sig || sig(f.type, f.url || "", f.check_id || "", f.title || "");
     const existing = this.db.prepare(`SELECT sig FROM findings WHERE run_id=? AND sig=?`).get(runId, s);
     if (existing) return { isNew: false, sig: s };
+    const knownBefore = this.db.prepare(`SELECT sig FROM knowledge WHERE origin=? AND kind='finding' AND sig=?`).get(origin, s);
+    const newToOrigin = knownBefore ? 0 : 1;
     this.db.prepare(
-      `INSERT INTO findings(run_id, sig, type, category, severity, title, detail, url, evidence, check_id, persona, bot, screenshot, ts)
-       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT INTO findings(run_id, sig, type, category, severity, title, detail, url, evidence, check_id, persona, bot, screenshot, new_to_origin, ts)
+       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).run(runId, s, f.type, f.category || "", f.severity || "med", f.title || "", f.detail || "",
-          f.url || "", f.evidence || "", f.check_id || "", f.persona || "", f.bot || "", f.screenshot || "", Date.now());
+          f.url || "", f.evidence || "", f.check_id || "", f.persona || "", f.bot || "", f.screenshot || "", newToOrigin, Date.now());
     this._remember(origin, "finding", s, f.title || f.type);
-    return { isNew: true, sig: s };
+    return { isNew: true, isNewToOrigin: !knownBefore, sig: s };
+  }
+
+  // --- Skips (no-go scope) ---
+  addSkip(runId, s) {
+    const key = s.sig || sig(s.kind || "", s.url || "", s.label || "");
+    const existing = this.db.prepare(`SELECT sig FROM skips WHERE run_id=? AND sig=?`).get(runId, key);
+    if (existing) return { isNew: false };
+    this.db.prepare(
+      `INSERT INTO skips(run_id, sig, kind, label, url, reason, bot, ts) VALUES(?,?,?,?,?,?,?,?)`
+    ).run(runId, key, s.kind || "", s.label || "", s.url || "", s.reason || "", s.bot || "", Date.now());
+    return { isNew: true };
+  }
+  skips(runId) { return this.db.prepare(`SELECT * FROM skips WHERE run_id=? ORDER BY ts ASC`).all(runId); }
+
+  // --- One-time free-scan ledger ---
+  freeScanUsed(appUserId) {
+    if (!appUserId) return false;
+    return !!this.db.prepare(`SELECT app_user_id FROM free_scans WHERE app_user_id=?`).get(appUserId);
+  }
+  markFreeScan(appUserId) {
+    if (!appUserId) return;
+    this.db.prepare(`INSERT OR IGNORE INTO free_scans(app_user_id, used_at) VALUES(?,?)`).run(appUserId, Date.now());
   }
 
   // --- Read models for the dashboard / report ---

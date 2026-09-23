@@ -4,7 +4,8 @@ import { Memory } from "./memory.js";
 import { Bot, launchBrowser } from "./bot.js";
 import { assignPersonas } from "./personas.js";
 import { buildReport } from "./report.js";
-import { SCAN_HARD_CAP_MS, MAX_BOTS } from "./env.js";
+import { normalizeScope } from "./scope.js";
+import { SCAN_HARD_CAP_MS, MAX_BOTS, MAX_PAGES } from "./env.js";
 
 // --- Authorization gate. You may only scan what you own or are cleared to test.
 // Public targets are refused unless the operator opts in AND confirms ownership.
@@ -22,17 +23,23 @@ export function targetAllowed(url) {
 }
 
 export class Orchestrator {
-  constructor({ target, bots = 5, emit = () => {}, dbPath = ":memory:", authorized = false }) {
+  constructor({ target, bots = 5, emit = () => {}, dbPath = ":memory:", authorized = false, scope = {} }) {
     this.target = target;
     this.bots = Math.max(1, Math.min(MAX_BOTS, bots | 0));
     this.emit = emit;
     this.dbPath = dbPath;
     this.authorized = authorized;
+    this.scope = normalizeScope(scope);
     this.stopped = false;
     this._bots = [];
   }
 
   stop() { this.stopped = true; this._bots.forEach((b) => b.stop()); }
+
+  // Watch the page count and stop the swarm once the crawl bound is hit.
+  _capPages(memory, runId) {
+    return setInterval(() => { if (memory.stats(runId).states >= MAX_PAGES) this.stop(); }, 400);
+  }
 
   async run() {
     const gate = targetAllowed(this.target);
@@ -44,18 +51,19 @@ export class Orchestrator {
     const runId = memory.createRun(this.target);
     const origin = new URL(this.target).origin;
 
-    this.emit({ t: "run:start", runId, target: this.target, bots: this.bots, prior });
+    this.emit({ t: "run:start", runId, target: this.target, bots: this.bots, prior, scope: this.scope });
 
     const browser = await launchBrowser();
     const personas = assignPersonas(this.bots);
     this._bots = personas.map((persona, i) => new Bot({
       id: `bot-${i + 1}`, persona, memory, runId, origin,
-      startUrl: this.target, emit: this.emit, browser,
+      startUrl: this.target, scope: this.scope, emit: this.emit, browser,
     }));
     this.emit({ t: "roster", bots: this._bots.map((b) => ({ id: b.id, persona: b.persona })) });
 
-    // Hard time cap.
+    // Hard time cap + crawl-size cap.
     const cap = setTimeout(() => this.stop(), SCAN_HARD_CAP_MS);
+    const pageCap = this._capPages(memory, runId);
     // Live stats ticker for the dashboard.
     const ticker = setInterval(() => this.emit({ t: "stats", ...memory.stats(runId) }), 500);
 
@@ -63,6 +71,7 @@ export class Orchestrator {
       await Promise.all(this._bots.map((b) => b.run().catch((e) => this.emit({ t: "bot:error", bot: b.id, error: String(e.message) }))));
     } finally {
       clearTimeout(cap);
+      clearInterval(pageCap);
       clearInterval(ticker);
       await browser.close().catch(() => {});
     }

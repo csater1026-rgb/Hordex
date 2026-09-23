@@ -23,3 +23,13 @@ export const ANTHROPIC_MODEL = process.env.HORDEX_MODEL || "claude-sonnet-5";
 // Safety rails.
 export const SCAN_HARD_CAP_MS = Number(process.env.HORDEX_SCAN_CAP_MS || 120000);
 export const MAX_BOTS = Number(process.env.HORDEX_MAX_BOTS || 20);
+// Crawl bounds so a large site can't grow the frontier without limit.
+export const MAX_PAGES = Number(process.env.HORDEX_MAX_PAGES || 80);
+export const MAX_DEPTH = Number(process.env.HORDEX_MAX_DEPTH || 6);
+
+// Free tier: one demo scan, this many bots. Pro lifts both.
+export const FREE_BOTS = Number(process.env.HORDEX_FREE_BOTS || 5);
+// RevenueCat server-side entitlement check (v1 secret key). When unset, the
+// backend runs "unverified" (dev/demo) and trusts the client's Pro claim.
+export const REVENUECAT_SECRET_KEY = process.env.REVENUECAT_SECRET_KEY || "";
+export const REVENUECAT_ENTITLEMENT = process.env.HORDEX_ENTITLEMENT || "pro";

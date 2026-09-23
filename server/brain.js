@@ -9,7 +9,7 @@
 // input, submit every form, click every button). The heuristic alone achieves
 // full coverage of the demo target, which keeps the offline self-test honest.
 import { ANTHROPIC_API_KEY, ANTHROPIC_MODEL } from "./env.js";
-import { ATTACK_PAYLOADS } from "./personas.js";
+import { CHAOS_INPUTS } from "./personas.js";
 
 // Realistic-ish values a normal user would type, by input type/name.
 function humanValue(input) {
@@ -22,18 +22,18 @@ function humanValue(input) {
   return "hello world";
 }
 
-function attackValue(step) {
-  return ATTACK_PAYLOADS[step % ATTACK_PAYLOADS.length];
+function chaosValue(step) {
+  return CHAOS_INPUTS[step % CHAOS_INPUTS.length];
 }
 
 // The deterministic plan. `obs` = observed page; returns an ordered action list.
 export function heuristicPlan(obs) {
-  const malicious = obs.persona?.bias?.malicious === 1;
+  const chaos = obs.persona?.bias?.chaos === 1;
   const actions = [];
 
   // Fill inputs, then submit forms — this is what surfaces validation/state bugs.
   obs.inputs?.forEach((inp, i) => {
-    actions.push({ kind: "type", idx: inp.idx, value: malicious ? attackValue(i) : humanValue(inp), reason: malicious ? "probe input with hostile data" : "fill the field" });
+    actions.push({ kind: "type", idx: inp.idx, value: chaos ? chaosValue(i) : humanValue(inp), reason: chaos ? "type messy input a real user might paste" : "fill the field" });
   });
   obs.forms?.forEach((f) => actions.push({ kind: "submit", idx: f.idx, reason: "submit the form" }));
 
@@ -49,8 +49,9 @@ export function heuristicPlan(obs) {
 
 async function claudePlan(obs, signal) {
   const sys =
-    "You are a QA bot impersonating a real, imperfect user testing a web app the user OWNS and is authorized to test. " +
-    "Given the current page and your persona, return a short JSON plan of human-like actions to try — things that might reveal broken flows or bugs. " +
+    "You are one bot in a swarm testing a web app the user OWNS, by behaving like a real, imperfect end user of that persona. " +
+    "You are NOT attacking or probing for vulnerabilities — you are exercising the app's normal features to surface broken flows, dead buttons, and crashes. " +
+    "Given the current page and your persona, return a short JSON plan of human-like actions to try. " +
     'Reply ONLY with JSON: {"actions":[{"kind":"type|click|submit","idx":<number>,"value":"<for type>","reason":"<short>"}]}. ' +
     "Use the idx values exactly as given. Keep it to at most 8 actions.";
   const user = JSON.stringify({
