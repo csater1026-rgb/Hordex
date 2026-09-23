@@ -102,6 +102,12 @@
     </div>
   </div>
 
+  <div class="card hidden" id="understand">
+    <h2>What the swarm understands</h2>
+    <p id="briefSummary" class="muted" style="font-size:13px;margin:0 0 6px"></p>
+    <div id="goalList"></div>
+  </div>
+
   <div class="card">
     <h2>The swarm</h2>
     <div id="botlist" class="bots"><div class="empty">Start a scan to release the swarm.</div></div>
@@ -161,7 +167,7 @@ const CFG = window.HORDEX_CONFIG || {};
 const EMOJI = { skimmer:"⚡", newcomer:"🧭", power:"⌨️", flaky:"📶", chaos:"🌀" };
 const FREE_BOTS = 5;
 
-let pro=false, uid="", ws=null, running=false, actCount=0, skipCount=0, freeUsed=false;
+let pro=false, uid="", ws=null, running=false, actCount=0, skipCount=0, freeUsed=false, hasPrior=false;
 const bots=new Map(); const findings=[]; const stateSet=new Set();
 
 function backendURL(){ try{ return localStorage.getItem("hordex_backend")||CFG.BACKEND_URL||""; }catch{ return CFG.BACKEND_URL||""; } }
@@ -216,26 +222,35 @@ function addFeed(who,txt,cls){ const f=$("feed"); if(f.querySelector(".empty"))f
 function ensureBot(id,persona){ if(bots.has(id))return bots.get(id);
   const box=$("botlist"); if(box.querySelector(".empty"))box.innerHTML="";
   const el=document.createElement("div"); el.className="bot";
-  el.innerHTML=`<div class="av">${EMOJI[persona?.id]||"🤖"}<span class="c">0</span></div><div class="nm">${esc(id)}</div><div class="ac">idle</div>`;
+  const goalStr = persona?.goal?.title ? "🎯 "+esc(persona.goal.title) : "idle";
+  el.innerHTML=`<div class="av">${EMOJI[persona?.id]||"🤖"}<span class="c">0</span></div><div class="nm">${esc(id)}</div><div class="ac">${goalStr}</div>`;
   box.appendChild(el);
   const rec={el,ac:el.querySelector(".ac"),c:el.querySelector(".c"),count:0}; bots.set(id,rec); return rec; }
 function botActive(id,txt){ const b=bots.get(id); if(!b)return; b.el.classList.add("active"); b.ac.textContent=txt; clearTimeout(b.t); b.t=setTimeout(()=>b.el.classList.remove("active"),900); }
 const SEV={crit:0,high:1,med:2,low:3};
 function renderFindings(){
-  const by={crit:0,high:0,med:0,low:0}; let neu=0; findings.forEach(f=>{by[f.severity]=(by[f.severity]||0)+1; if(f.isNewToOrigin)neu++;});
+  const isNew=(f)=>hasPrior && f.isNewToOrigin;
+  const by={crit:0,high:0,med:0,low:0}; let neu=0; findings.forEach(f=>{by[f.severity]=(by[f.severity]||0)+1; if(isNew(f))neu++;});
   $("cCrit").textContent=by.crit;$("cHigh").textContent=by.high;$("cMed").textContent=by.med;$("cNew").textContent=neu;
   $("export").classList.toggle("hidden",!(pro&&findings.length));
   const box=$("findings");
   if(!findings.length){ box.innerHTML='<div class="empty">No issues yet.</div>'; return; }
   const sorted=[...findings].sort((a,b)=>SEV[a.severity]-SEV[b.severity]);
-  box.innerHTML=sorted.map(f=>`<div class="finding ${f.severity}"><div class="top"><span class="sev ${f.severity}">${f.severity}</span><span class="ttl">${esc(f.title)}</span>${f.isNewToOrigin?'<span class="new">NEW</span>':''}</div>${f.url?`<div class="sub">${esc(shortUrl(f.url))}</div>`:""}<div class="fix">🔧 ${esc(f.fix||"")}</div></div>`).join("");
+  box.innerHTML=sorted.map(f=>`<div class="finding ${f.severity}"><div class="top"><span class="sev ${f.severity}">${f.severity}</span><span class="ttl">${esc(f.title)}</span>${isNew(f)?'<span class="new">NEW</span>':''}</div>${f.url?`<div class="sub">${esc(shortUrl(f.url))}</div>`:""}${f.goal?`<div class="sub">🎯 while trying to: ${esc(f.goal)}</div>`:""}<div class="fix">🔧 ${esc(f.fix||"")}</div></div>`).join("");
 }
 
 function handle(e){
   switch(e.t){
     case "run:start": $("tStates").textContent=0;$("tFindings").textContent=0;$("tActs").textContent=0;$("tSkips").textContent=0;
+      hasPrior=(e.prior?.states||0)>0;
+      $("understand").classList.add("hidden"); $("goalList").innerHTML=""; $("briefSummary").textContent="";
       addFeed("hordex",`swarm on ${shortUrl(e.target)} · ${e.bots} bots`); break;
-    case "roster": e.bots.forEach(b=>ensureBot(b.id,b.persona)); break;
+    case "recon:start": addFeed("hordex","🔍 reading the app to understand what it's for…"); break;
+    case "brief":{ const b=e.brief; $("understand").classList.remove("hidden");
+      $("briefSummary").textContent=(b.appType?`[${b.appType}] `:"")+(b.summary||"");
+      $("goalList").innerHTML=(b.goals||[]).map(g=>`<div class="ev" style="white-space:normal">🎯 ${esc(g.title)}</div>`).join("");
+      addFeed("hordex",`understood the app · ${(b.goals||[]).length} goals to test`); break; }
+    case "roster": e.bots.forEach(b=>ensureBot(b.id,{...b.persona, goal:b.goal})); break;
     case "state": ensureBot(e.bot,{id:e.persona}); botActive(e.bot,"at "+shortUrl(e.url)); addFeed(e.bot,(e.isNew?"visited ":"revisited ")+shortUrl(e.url)); break;
     case "think": botActive(e.bot,`planning ${e.actions} moves`); break;
     case "act": actCount++; $("tActs").textContent=actCount; botActive(e.bot,e.kind+" · "+(e.reason||"")); break;

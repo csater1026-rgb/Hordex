@@ -43,7 +43,8 @@ export class Memory {
       CREATE TABLE IF NOT EXISTS findings(
         run_id INTEGER, sig TEXT, type TEXT, category TEXT, severity TEXT,
         title TEXT, detail TEXT, url TEXT, evidence TEXT, check_id TEXT,
-        persona TEXT, bot TEXT, screenshot TEXT, new_to_origin INTEGER DEFAULT 0, ts INTEGER,
+        persona TEXT, bot TEXT, screenshot TEXT, new_to_origin INTEGER DEFAULT 0,
+        goal TEXT DEFAULT '', ts INTEGER,
         PRIMARY KEY(run_id, sig));
       /* Things the swarm deliberately avoided (no-go scope). */
       CREATE TABLE IF NOT EXISTS skips(
@@ -160,10 +161,10 @@ export class Memory {
     const knownBefore = this.db.prepare(`SELECT sig FROM knowledge WHERE origin=? AND kind='finding' AND sig=?`).get(origin, s);
     const newToOrigin = knownBefore ? 0 : 1;
     this.db.prepare(
-      `INSERT INTO findings(run_id, sig, type, category, severity, title, detail, url, evidence, check_id, persona, bot, screenshot, new_to_origin, ts)
-       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT INTO findings(run_id, sig, type, category, severity, title, detail, url, evidence, check_id, persona, bot, screenshot, new_to_origin, goal, ts)
+       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).run(runId, s, f.type, f.category || "", f.severity || "med", f.title || "", f.detail || "",
-          f.url || "", f.evidence || "", f.check_id || "", f.persona || "", f.bot || "", f.screenshot || "", newToOrigin, Date.now());
+          f.url || "", f.evidence || "", f.check_id || "", f.persona || "", f.bot || "", f.screenshot || "", newToOrigin, f.goal || "", Date.now());
     this._remember(origin, "finding", s, f.title || f.type);
     return { isNew: true, isNewToOrigin: !knownBefore, sig: s };
   }

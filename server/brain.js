@@ -51,11 +51,14 @@ async function claudePlan(obs, signal) {
   const sys =
     "You are one bot in a swarm testing a web app the user OWNS, by behaving like a real, imperfect end user of that persona. " +
     "You are NOT attacking or probing for vulnerabilities — you are exercising the app's normal features to surface broken flows, dead buttons, and crashes. " +
-    "Given the current page and your persona, return a short JSON plan of human-like actions to try. " +
+    (obs.goal ? "Act with intent: try to make progress toward YOUR GOAL on this page, the way this persona would. " : "") +
+    "Given the current page, your persona, and your goal, return a short JSON plan of human-like actions to try. " +
     'Reply ONLY with JSON: {"actions":[{"kind":"type|click|submit","idx":<number>,"value":"<for type>","reason":"<short>"}]}. ' +
     "Use the idx values exactly as given. Keep it to at most 8 actions.";
   const user = JSON.stringify({
     persona: { id: obs.persona?.id, label: obs.persona?.label, style: obs.persona?.blurb },
+    app: obs.brief?.summary || undefined,
+    goal: obs.goal ? { title: obs.goal.title, hint: obs.goal.hint } : undefined,
     url: obs.url, title: obs.title,
     inputs: obs.inputs, buttons: obs.buttons, forms: obs.forms,
   });

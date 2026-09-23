@@ -17,11 +17,11 @@ export function fixFor(f) {
   return FIX_BY_CATEGORY[f.category] || "Reproduce the issue, confirm the impact, and fix at the source.";
 }
 
-export function buildReport(memory, runId, target, prior = { states: 0, findings: 0 }) {
+export function buildReport(memory, runId, target, prior = { states: 0, findings: 0 }, brief = null) {
   const findings = memory.findings(runId).map((f) => ({
     severity: f.severity, severityLabel: SEV_LABEL[f.severity] || f.severity,
     type: f.type, category: f.category, title: f.title, url: f.url,
-    detail: f.detail, foundBy: f.bot, persona: f.persona,
+    detail: f.detail, foundBy: f.bot, persona: f.persona, goal: f.goal || "",
     newlyBroken: !!f.new_to_origin && (prior.states > 0 || prior.findings > 0),
     fix: fixFor(f),
   }));
@@ -30,15 +30,28 @@ export function buildReport(memory, runId, target, prior = { states: 0, findings
   const skips = memory.skips(runId).map((s) => ({ kind: s.kind, label: s.label, url: s.url, reason: s.reason }));
   const newly = findings.filter((f) => f.newlyBroken);
 
+  // Group issues under the user goal the bot was pursuing (when recon ran).
+  const goals = (brief && brief.goals) || [];
+  const byGoal = goals.map((g) => ({
+    goal: g.title,
+    issues: findings.filter((f) => f.goal === g.title).length,
+  }));
+  const understood = brief && !brief.error
+    ? { summary: brief.summary, appType: brief.appType, goals: goals.map((g) => g.title) }
+    : null;
+
   return {
     target,
     generatedAt: new Date().toISOString(),
+    understood,
+    goalsCoverage: byGoal,
     summary: {
       statesExplored: stats.states,
       findings: stats.findings,
       bySeverity: stats.bySeverity,
       newlyBroken: newly.length,
       skipped: skips.length,
+      goals: goals.length,
     },
     trainedMemory: prior.states > 0 || prior.findings > 0
       ? { seenBefore: true, priorStates: prior.states, priorFindings: prior.findings,
@@ -51,13 +64,17 @@ export function buildReport(memory, runId, target, prior = { states: 0, findings
     newlyBroken: newly,
     skipped: skips,
     statesExplored: states.map((s) => ({ url: s.url, title: s.title, firstBot: s.first_bot, visits: s.visits })),
-    markdown: toMarkdown(target, findings, stats, skips, newly),
+    markdown: toMarkdown(target, findings, stats, skips, newly, understood),
   };
 }
 
-export function toMarkdown(target, findings, stats, skips = [], newly = []) {
+export function toMarkdown(target, findings, stats, skips = [], newly = [], understood = null) {
   const lines = [];
   lines.push(`# Hordex report — ${target}`, "");
+  if (understood) {
+    lines.push(`**What the swarm understood:** ${understood.summary}`, "");
+    if (understood.goals?.length) lines.push(`**User goals tested:** ${understood.goals.join(" · ")}`, "");
+  }
   lines.push(`Scanned ${new Date().toLocaleString()} · ${stats.states} pages explored · **${stats.findings} issues found**`, "");
   if (newly.length) lines.push(`> ⚠ ${newly.length} of these are **new since the last scan** — likely broken by a recent change.`, "");
   lines.push(`| Critical | High | Medium | Low |`, `|---|---|---|---|`,

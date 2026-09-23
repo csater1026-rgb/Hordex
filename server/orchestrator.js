@@ -5,6 +5,7 @@ import { Bot, launchBrowser } from "./bot.js";
 import { assignPersonas } from "./personas.js";
 import { buildReport } from "./report.js";
 import { normalizeScope } from "./scope.js";
+import { reconApp, RECON_EXTRACT } from "./recon.js";
 import { SCAN_HARD_CAP_MS, MAX_BOTS, MAX_PAGES } from "./env.js";
 
 // --- Authorization gate. You may only scan what you own or are cleared to test.
@@ -54,12 +55,20 @@ export class Orchestrator {
     this.emit({ t: "run:start", runId, target: this.target, bots: this.bots, prior, scope: this.scope });
 
     const browser = await launchBrowser();
+
+    // --- AI recon pre-scan: read the app, work out its user goals. ---
+    const brief = await this._recon(browser);
+    if (brief) this.emit({ t: "brief", brief });
+    const goals = (brief && brief.goals) || [];
+
     const personas = assignPersonas(this.bots);
     this._bots = personas.map((persona, i) => new Bot({
       id: `bot-${i + 1}`, persona, memory, runId, origin,
-      startUrl: this.target, scope: this.scope, emit: this.emit, browser,
+      startUrl: this.target, scope: this.scope, brief,
+      goal: goals.length ? goals[i % goals.length] : null,
+      emit: this.emit, browser,
     }));
-    this.emit({ t: "roster", bots: this._bots.map((b) => ({ id: b.id, persona: b.persona })) });
+    this.emit({ t: "roster", bots: this._bots.map((b) => ({ id: b.id, persona: b.persona, goal: b.goal })) });
 
     // Hard time cap + crawl-size cap.
     const cap = setTimeout(() => this.stop(), SCAN_HARD_CAP_MS);
@@ -77,10 +86,30 @@ export class Orchestrator {
     }
 
     memory.finishRun(runId, this.stopped ? "stopped" : "done");
-    const report = buildReport(memory, runId, this.target, prior);
+    const report = buildReport(memory, runId, this.target, prior, brief);
     this.emit({ t: "stats", ...memory.stats(runId) });
     this.emit({ t: "run:done", runId, report });
     memory.close();
     return report;
+  }
+
+  // Load the entry page once and ask Claude what the app is + its user goals.
+  // Best-effort: any failure (or no API key) just means no goal-steering.
+  async _recon(browser) {
+    this.emit({ t: "recon:start", target: this.target });
+    let ctx;
+    try {
+      ctx = await browser.newContext({ ignoreHTTPSErrors: true });
+      const page = await ctx.newPage();
+      await page.goto(this.target, { waitUntil: "domcontentloaded", timeout: 15000 });
+      const info = await page.evaluate(RECON_EXTRACT).catch(() => ({}));
+      info.url = this.target;
+      const brief = await reconApp(info);
+      return brief && !brief.error ? brief : null;
+    } catch {
+      return null;
+    } finally {
+      if (ctx) await ctx.close().catch(() => {});
+    }
   }
 }

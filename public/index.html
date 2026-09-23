@@ -113,6 +113,11 @@
   </section>
 
   <section>
+    <div class="panel hidden" id="understand">
+      <h2>What the swarm understands</h2>
+      <p id="briefSummary" class="muted" style="font-size:13.5px;margin:0 0 8px"></p>
+      <div id="goalList" class="states"></div>
+    </div>
     <div class="panel">
       <h2>Live coverage</h2>
       <div class="tiles">
@@ -147,7 +152,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const EMOJI = { skimmer:"⚡", newcomer:"🧭", power:"⌨️", flaky:"📶", chaos:"🌀" };
-let running=false, actCount=0, skipCount=0;
+let running=false, actCount=0, skipCount=0, hasPrior=false;
 const bots=new Map(); const findings=[]; const stateSet=new Set();
 
 function esc(s){ return String(s??"").replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -166,18 +171,20 @@ function addFeed(who,txt,cls){ const feed=$("feed"); if(feed.querySelector(".emp
 function ensureBot(id,persona){ if(bots.has(id))return bots.get(id);
   const box=$("botlist"); const empty=$("botsEmpty"); if(empty) empty.remove();
   const el=document.createElement("div"); el.className="bot";
-  el.innerHTML=`<div class="av">${EMOJI[persona?.id]||"🤖"}</div><div class="meta"><div class="name">${esc(id)} · <span class="muted">${esc(persona?.label||"")}</span></div><div class="act">idle</div></div><div class="cnt">0</div>`;
+  const goalStr = persona?.goal?.title ? ` · 🎯 ${esc(persona.goal.title)}` : "";
+  el.innerHTML=`<div class="av">${EMOJI[persona?.id]||"🤖"}</div><div class="meta"><div class="name">${esc(id)} · <span class="muted">${esc(persona?.label||"")}</span></div><div class="act">idle${goalStr}</div></div><div class="cnt">0</div>`;
   box.appendChild(el);
-  const rec={persona,count:0,el,actEl:el.querySelector(".act"),cntEl:el.querySelector(".cnt")}; bots.set(id,rec); return rec; }
+  const rec={persona,count:0,el,actEl:el.querySelector(".act"),cntEl:el.querySelector(".cnt"),goal:persona?.goal?.title||""}; bots.set(id,rec); return rec; }
 function botActive(id,txt){ const b=bots.get(id); if(!b)return; b.el.classList.add("active"); b.actEl.textContent=txt; clearTimeout(b.t); b.t=setTimeout(()=>b.el.classList.remove("active"),900); }
 const SEV={crit:0,high:1,med:2,low:3};
 function renderFindings(){
-  const by={crit:0,high:0,med:0,low:0}; let neu=0; findings.forEach(f=>{by[f.severity]=(by[f.severity]||0)+1; if(f.isNewToOrigin)neu++;});
+  const isNew=(f)=>hasPrior && f.isNewToOrigin;
+  const by={crit:0,high:0,med:0,low:0}; let neu=0; findings.forEach(f=>{by[f.severity]=(by[f.severity]||0)+1; if(isNew(f))neu++;});
   $("cCrit").textContent=by.crit;$("cHigh").textContent=by.high;$("cMed").textContent=by.med;$("cNew").textContent=neu;
   $("export").classList.toggle("hidden",!findings.length);
   const box=$("findings"); if(!findings.length){ box.innerHTML='<div class="empty">No issues yet.</div>'; return; }
   const sorted=[...findings].sort((a,b)=>SEV[a.severity]-SEV[b.severity]);
-  box.innerHTML=sorted.map(f=>`<div class="finding ${f.severity}"><div class="top"><span class="sev ${f.severity}">${f.severity}</span><span class="ttl">${esc(f.title)}</span>${f.isNewToOrigin?'<span class="new">NEW</span>':''}</div>${f.url?`<div class="sub">${esc(f.url)}</div>`:""}<div class="fix">🔧 ${esc(f.fix||"")}</div><div class="by">found by ${esc(f.foundBy||f.bot||"")} · ${esc(f.persona||"")}</div></div>`).join("");
+  box.innerHTML=sorted.map(f=>`<div class="finding ${f.severity}"><div class="top"><span class="sev ${f.severity}">${f.severity}</span><span class="ttl">${esc(f.title)}</span>${isNew(f)?'<span class="new">NEW</span>':''}</div>${f.url?`<div class="sub">${esc(f.url)}</div>`:""}${f.goal?`<div class="sub">🎯 while trying to: ${esc(f.goal)}</div>`:""}<div class="fix">🔧 ${esc(f.fix||"")}</div><div class="by">found by ${esc(f.foundBy||f.bot||"")} · ${esc(f.persona||"")}</div></div>`).join("");
 }
 
 let ws=null;
@@ -185,8 +192,15 @@ function connectWS(){ ws=new WebSocket((location.protocol==="https:"?"wss":"ws")
 function handle(e){
   switch(e.t){
     case "run:start": $("tStates").textContent=0;$("tFindings").textContent=0;$("tActs").textContent=0;$("tSkips").textContent=0;
+      hasPrior = (e.prior?.states||0)>0;
+      $("understand").classList.add("hidden"); $("goalList").innerHTML=""; $("briefSummary").textContent="";
       addFeed("hordex",`swarm released on ${e.target} · ${e.bots} bots`+(e.prior?.states?` · knows ${e.prior.states} pages from before`:"")); break;
-    case "roster": e.bots.forEach(b=>ensureBot(b.id,b.persona)); break;
+    case "recon:start": addFeed("hordex","🔍 reading the app to understand what it's for…"); break;
+    case "brief":{ const b=e.brief; $("understand").classList.remove("hidden");
+      $("briefSummary").textContent = (b.appType?`[${b.appType}] `:"") + (b.summary||"");
+      $("goalList").innerHTML = (b.goals||[]).map(g=>`<div class="state">🎯 <b>${esc(g.title)}</b></div>`).join("");
+      addFeed("hordex",`understood the app · ${(b.goals||[]).length} user goals to test`); break; }
+    case "roster": e.bots.forEach(b=>ensureBot(b.id,{...b.persona, goal:b.goal})); break;
     case "state":{ ensureBot(e.bot,{id:e.persona}); botActive(e.bot,"at "+shortUrl(e.url));
       if(!stateSet.has(e.url)){ stateSet.add(e.url); const s=document.createElement("div"); s.className="state"; s.innerHTML=`<b>${esc(shortUrl(e.url))}</b>`; $("states").appendChild(s); }
       addFeed(e.bot,(e.isNew?"visited ":"revisited ")+shortUrl(e.url)); break; }

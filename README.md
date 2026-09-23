@@ -66,6 +66,19 @@ coverage, not completeness.
   page + the persona and returns a short plan of human-like actions. No key? A
   deterministic heuristic keeps the swarm (and the offline self-test) running.
 
+### AI recon (understanding the app)
+
+Before the swarm launches, an **AI pre-scan** (`server/recon.js`) reads the entry
+page and works out *what the app is* and the main **user goals** someone would
+come to accomplish (sign up, create and save a note, search, upgrade). Those
+goals are handed to the bots, so they test with **intent** — trying to complete
+real journeys — instead of only clicking around. That's what surfaces broken
+*multi-step flows*, not just broken individual controls. Issues in the report are
+grouped under the goal the bot was pursuing ("while trying to: Upgrade to Pro").
+
+Recon needs `ANTHROPIC_API_KEY` (it's inherently AI). Without a key, the swarm
+still runs — it just explores without goal-steering.
+
 ### The no-go scope (safety)
 
 Once bots behave like real users, they can do the damaging things real users can

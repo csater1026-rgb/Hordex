@@ -38,8 +38,8 @@ const INDEX_FN = `() => {
 const INDEX_CALL = `(${INDEX_FN})()`;
 
 export class Bot {
-  constructor({ id, persona, memory, runId, origin, startUrl, scope, emit, browser }) {
-    Object.assign(this, { id, persona, memory, runId, origin, startUrl, scope, emit, browser });
+  constructor({ id, persona, memory, runId, origin, startUrl, scope, brief, goal, emit, browser }) {
+    Object.assign(this, { id, persona, memory, runId, origin, startUrl, scope, brief, goal, emit, browser });
     this.stopped = false;
     this.steps = 0;
   }
@@ -47,7 +47,7 @@ export class Bot {
   stop() { this.stopped = true; }
 
   report(f) {
-    const finding = { ...f, persona: this.persona.id, bot: this.id, foundBy: this.id };
+    const finding = { ...f, persona: this.persona.id, bot: this.id, foundBy: this.id, goal: this.goal?.title || "" };
     finding.fix = f.fix || fixFor(f);
     const { isNew, isNewToOrigin } = this.memory.addFinding(this.runId, this.origin, finding);
     if (isNew) this.emit({ t: "finding", bot: this.id, finding: { ...finding, isNewToOrigin } });
@@ -125,7 +125,7 @@ export class Bot {
     }
 
     const obs = await page.evaluate(INDEX_CALL).catch(() => ({ inputs: [], forms: [], buttons: [], links: [] }));
-    obs.url = url; obs.persona = this.persona;
+    obs.url = url; obs.persona = this.persona; obs.brief = this.brief; obs.goal = this.goal;
 
     // Record the state (coverage). State signature = path + shape of the page.
     const path = this.pathOf(url);

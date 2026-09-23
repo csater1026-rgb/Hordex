@@ -36,8 +36,10 @@ Keep it to essential footage — judges may stop at 2:00.
    sends a swarm of bots through your app like thousands of real users — so you
    find what's broken before your real users do."
 2. **0:15–0:35 — Start the free demo scan.** On the phone: paste a target, tick
-   "I own this", **Release the swarm**. Show the bots appear (skimmer, chaos
-   user, …).
+   "I own this", **Release the swarm**. Show the **"🔍 understanding the app"**
+   beat and the goals it figured out ("Create a note," "Upgrade to Pro"), then
+   the bots appear (skimmer, chaos user, …) each pursuing a goal. *(Recon needs
+   your `ANTHROPIC_API_KEY` set on the backend.)*
 3. **0:35–1:05 — The swarm working (the wow).** Bots moving through the app, the
    live feed scrolling, issues streaming in — call a couple out: "a button that
    crashes… a form that silently fails… a broken link." Point out the green
